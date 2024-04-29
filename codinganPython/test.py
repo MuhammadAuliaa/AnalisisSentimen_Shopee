@@ -1,3 +1,0 @@
-print("halo")
-
-tes tambah
