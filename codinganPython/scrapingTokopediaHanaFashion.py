@@ -4,13 +4,18 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from selenium.webdriver.common.by import By
 
-# Terima input 5 nama produk dari pengguna
+# Daftar input 10 nama produk dari pengguna
 nama_produk_list = [
-    "HanaFashion - Kharen T-shirt Knit / Kaos Crop Wanita Korea - TS478",
-    "HanaFashion - Bona T-shirt Wanita / Kaos Wanita Gaya Korea - TS421",
-    "HanaFashion - Anya Mini Skirt / Rok Pendek Wanita Murah - SK171",
+    "HanaFashion - Danise Short Pants Celana Pendek Wanita - SP061 - yellow green, XL",
+    "Hanafe Crop Top Hana Fashion - Light Grey, M",
+    "HanaFashion - Lucia Basic Casual Cardigan Outer Simple Wanita - SB136 - MC Polka, S",
     "HanaFashion - Woori Blue Jeans Long Pants - JLP043",
-    "Hana Fashion - Nagita Set Strap Midi Dress With Cardigan - ST155"
+    "HanaFashion - Felecia Basic Outer Atasan Wanita - SB144 - Mustard, S",
+    "HanaFashion - Charlotte Short Pants Celana Pendek Wanita - SP050 - Purple, S",
+    "HanaFashion - Martina Basic - Kaos T Shirt Crop Top Murah - TS177 - Khaky, XXL",
+    "HanaFashion - Tiara Short Pants Celana Pendek Wanita - SP041 - Pink, S",
+    "HanaFashion - Sita Crop Tank Top Atasan Wanita - TT007 - Khaky, XL",
+    "HanaFashion - Kendall Crop Tank Top Wanita - TT114 - Royal Blue, S"
 ]
 
 # Mengubah daftar produk ke dalam set untuk pencarian cepat
@@ -34,10 +39,11 @@ if url:
     }
 
     data = []
-    products_scraped = set()  # Untuk melacak produk yang sudah di-scrape
+    # Kamus untuk melacak jumlah ulasan yang disimpan per produk
+    produk_ulasan_count = {produk: 0 for produk in nama_produk_list}
 
     # Loop untuk melakukan scraping
-    while len(products_scraped) < 5:
+    while True:
         soup = BeautifulSoup(driver.page_source, "html.parser")
         containers = soup.findAll('article', attrs={'class': 'css-ccpe8t'})
 
@@ -50,12 +56,12 @@ if url:
             if produk not in nama_produk_set:
                 continue
 
-            # Periksa apakah produk sudah di-scrape
-            if produk in products_scraped:
+            # Periksa apakah produk sudah memiliki 70 ulasan
+            if produk_ulasan_count[produk] >= 70:
                 continue
             
             # Tambahkan produk ke set products_scraped
-            products_scraped.add(produk)
+            produk_ulasan_count[produk] += 1
 
             # Dapatkan ulasan dan informasi pelanggan
             review_container = container.find('span', attrs={'data-testid': 'lblItemUlasan'})
@@ -72,10 +78,10 @@ if url:
             # Simpan data yang di-scrape
             data.append((pelanggan, produk, review, rating))
 
-            # Jika sudah 5 produk yang serupa, hentikan scraping
-            if len(products_scraped) >= 5:
-                break
-
+        # Periksa apakah semua produk sudah memiliki 70 ulasan
+        if all(count >= 70 for count in produk_ulasan_count.values()):
+            break
+        
         # Lanjutkan ke halaman berikutnya
         next_button = driver.find_element(By.CSS_SELECTOR, "button[aria-label^='Laman berikutnya']")
         if next_button:
