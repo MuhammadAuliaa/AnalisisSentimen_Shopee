@@ -21,7 +21,7 @@ norm= {" dgn " : " dengan ", ' seller ': ' penjual ',' service ':' pelayanan ', 
 " gak ":" tidak ", " dr ":" dari ", " yg ":" yang ", " lu ":" kamu ", " sya ":" saya ", 
 " lancarrr ":" lancar ", " kayak ":" seperti ", " ngawur ":" sembarangan ", " k ":" ke ", 
 " luasss ":" luas ", " sy ":" saya ", " thn ":" tahun ", " males ":" malas ",
-" tgl ":" tanggal ", " lg ":" lagi ", " bgt ":" banget ",' gua ':' saya ', '\n':' ', ' tpi ':' tapi ', ' standar ':' biasa ', ' standart ': ' biasa ', ' sdh ':' sudah ', ' n ':' dan ', ' gk ': ' tidak ', ' mengecwakan ':' mengecewakan ', ' d ':' di '}
+" tgl ":" tanggal ", " lg ":" lagi ", " bgt ":" banget ",' gua ':' saya ', '\n':' ', ' tpi ':' tapi ', ' standar ':' biasa ', ' standart ': ' biasa ', ' sdh ':' sudah ', ' n ':' dan ', ' gk ': ' tidak ', ' mengecwakan ':' mengecewakan ', ' d ':' di ', ' approved':' setuju', 'ademmmm ':'adem ', ' g ':' tidak ', ' gak ':' tidak ', ' cpt ':' cepat '}
 
 def normalisasi(text):
   for i in norm:
@@ -35,12 +35,16 @@ def clean(text):
   return text
 
 def labeling(rating):
-    if rating in ['4', '5']:
-        return 'Positif'
-    elif rating == '3':
-        return 'Netral'
-    else:
-        return 'Negatif'
+    # if rating in ['4', '5']:
+    #     return 'Positif'
+    # elif rating == '3':
+    #     return 'Netral'
+    # else:
+    #     return 'Negatif'
+    if rating == '4' or rating == '5':
+       return 'Positif'
+    else :
+       return 'Negatif'
 
 def tokenisasi(text):
     return text.split() 

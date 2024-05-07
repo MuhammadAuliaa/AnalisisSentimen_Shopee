@@ -13,8 +13,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 import time
 
-# Fungsi scrape_tokopedia_reviews
-def scrape_tokopedia_reviews(url, jumlah_data, file_path):
+def scrape_tokopedia_reviews(url, jumlah_data, file_path, rating_min, rating_max):
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
     driver = webdriver.Chrome(options=options)
@@ -49,34 +48,39 @@ def scrape_tokopedia_reviews(url, jumlah_data, file_path):
             review_container = container.find('span', attrs={'data-testid': 'lblItemUlasan'})
             review = review_container.text.strip() if review_container else 'Tidak ada ulasan'
 
-            # Pastikan containersProduk tidak kosong sebelum mencoba mengakses elemen pertama
+            # Mengambil nama produk
+            produk = 'Produk tidak ditemukan'
             if containersProduk:
                 # Akses elemen pertama dalam containersProduk
                 nama_produk = containersProduk[0].find('h1', attrs={'data-testid': 'lblPDPDetailProductName'})
                 produk = nama_produk.text.strip() if nama_produk else 'Produk tidak ditemukan'
-            else:
-                produk = 'Produk tidak ditemukan'
-
+            
+            # Mengambil nama pelanggan
             nama_pelanggan = container.find('span', attrs={'class': 'name'})
             pelanggan = nama_pelanggan.text.strip() if nama_pelanggan else 'Customer tidak ditemukan'
-
+            
             # Mengambil rating
             rating_container = container.find('div', attrs={'data-testid': 'icnStarRating'})
             rating_label = rating_container['aria-label'] if rating_container else 'Tidak ada rating'
             rating = rating_mapping.get(rating_label, 'Tidak ada rating')
 
-            # Tambahkan data ke dalam list
-            data.append((pelanggan, produk, review, rating))
-            data_count += 1  # Tambahkan data yang sudah terkumpul
+            # Filter data berdasarkan rentang rating yang diinginkan
+            if rating_min <= rating <= rating_max:
+                # Tambahkan data ke dalam list
+                data.append((pelanggan, produk, review, rating))
+                data_count += 1  # Tambahkan data yang sudah terkumpul
 
-        if data_count >= jumlah_data:
-            break
-
+        # Klik tombol "Laman berikutnya" untuk memuat lebih banyak ulasan
         buttons = driver.find_elements(By.CSS_SELECTOR, "button[aria-label^='Laman berikutnya']")
         if buttons:
             buttons[0].click()
             time.sleep(3)
-
+        
+    # Convert data ke DataFrame
     df = pd.DataFrame(data, columns=['Nama Pelanggan', 'Produk', 'Ulasan', 'Rating'])
+    
+    # Simpan data ke file CSV
     df.to_csv(file_path + ".csv", index=False)
+    
+    # Tutup driver
     driver.close()

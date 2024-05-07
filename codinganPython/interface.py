@@ -20,6 +20,7 @@ with st.sidebar:
         icons=['house', 'gear', 'book', 'pen', 'pen', 'book', 'kanban','activity', 'activity', 'cloud-upload' ], menu_icon="cast", default_index=0)
     selected
 
+# Alur program di Streamlit
 if selected == "Crawling":
     col1, col2 = st.columns([1,8])
     with col1:
@@ -27,15 +28,27 @@ if selected == "Crawling":
     with col2:
         st.title("Crawling Data")
 
+    # Input URL produk
     url = st.text_input("Masukkan URL produk:")
+
+    # Input nama file hasil scraping data
     nama_file = st.text_input("Masukkan nama file hasil scraping data:")
+
+    # Input jumlah data yang ingin diambil
     jumlah_data = st.number_input("Masukkan jumlah data yang ingin diambil:", min_value=1, step=1, value=10)
+    
+    # Input rentang rating yang ingin diambil
+    rating_min = st.number_input("Masukkan rating minimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=1)
+    rating_max = st.number_input("Masukkan rating maksimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=5)
+    
+    # Tentukan folder path dan file path
     folder_path = "data/dataScrapingHanaShop/"
     file_path = folder_path + nama_file
 
+    # Tombol untuk mulai scraping
     if st.button("Mulai Scraping"):
-        scrapingFunction.scrape_tokopedia_reviews(url, jumlah_data, file_path)
-        st.warning(f"Data telah disimpan ke: {file_path}.csv")
+        scrapingFunction.scrape_tokopedia_reviews(url, jumlah_data, file_path, rating_min, rating_max)
+        st.success(f"Data telah disimpan ke: {file_path}.csv")
 
 elif selected == 'Merge Data':
     st.title("Merge Data")
