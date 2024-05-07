@@ -9,18 +9,21 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import joblib
 
-def select_model(model_name):
-    if model_name == 'RandomForestClassifier':
-        return RandomForestClassifier()
-    elif model_name == 'DecisionTreeClassifier':
-        return DecisionTreeClassifier()
-    elif model_name == 'MultinomialNB':
-        return MultinomialNB()
-    else:
-        return None
+# def select_model(model_name):
+#     if model_name == 'Support Vector Machine':
+#         return SVC()
+#     elif model_name == 'DecisionTreeClassifier':
+#         return DecisionTreeClassifier()
+#     elif model_name == 'MultinomialNB':
+#         return MultinomialNB()
+#     else:
+#         return None
 
 def analyze_sentiment(data, model_name, test_size, model_filename):
     try:
+        # Menangani NaN pada kolom teks
+        data['Ulasan'] = data['Ulasan'].fillna("")
+
         train_data, test_data, train_labels, test_labels = train_test_split(
             data['Ulasan'], data['Sentimen'], test_size=test_size, random_state=42
         )
@@ -28,13 +31,13 @@ def analyze_sentiment(data, model_name, test_size, model_filename):
         vectorizer = CountVectorizer()
         train_features = vectorizer.fit_transform(train_data)
         test_features = vectorizer.transform(test_data)
-        model = select_model(model_name)
+        model = SVC()
         model.fit(train_features, train_labels)
-        model_filename_with_extension = f'codinganPython/model/{model_filename}.pkl'
+        model_filename_with_extension = f'./codinganPython/model/{model_filename}.pkl'
 
         joblib.dump(model, model_filename_with_extension)
 
-        vectorizer_filename = f'codinganPython/model/{model_filename}_vectorizer.pkl'
+        vectorizer_filename = f'./codinganPython/model/{model_filename}_vectorizer.pkl'
         joblib.dump(vectorizer, vectorizer_filename)
 
         predictions = model.predict(test_features)
