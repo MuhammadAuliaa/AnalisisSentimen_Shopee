@@ -30,24 +30,14 @@ if selected == "Crawling":
     with col2:
         st.title("Crawling Data")
 
-    # Input URL produk
     url = st.text_input("Masukkan URL produk:")
-
-    # Input nama file hasil scraping data
     nama_file = st.text_input("Masukkan nama file hasil scraping data:")
-
-    # Input jumlah data yang ingin diambil
     jumlah_data = st.number_input("Masukkan jumlah data yang ingin diambil:", min_value=1, step=1, value=10)
-    
-    # Input rentang rating yang ingin diambil
     rating_min = st.number_input("Masukkan rating minimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=1)
     rating_max = st.number_input("Masukkan rating maksimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=5)
-    
-    # Tentukan folder path dan file path
     folder_path = "data/dataScrapingHanaShop/"
     file_path = folder_path + nama_file
 
-    # Tombol untuk mulai scraping
     if st.button("Mulai Scraping"):
         scrapingFunction.scrape_tokopedia_reviews(url, jumlah_data, file_path, rating_min, rating_max)
         st.success(f"Data telah disimpan ke: {file_path}.csv")
@@ -173,10 +163,10 @@ elif selected == 'Visualization':
                             st.warning("Data yang dimasukkan tidak sesuai.")
                         else:
                             st.subheader("Visualization Sentiment - Bar Chart :")
-                            custom_palette = {'Negatif': 'red', 'Positif': '#0384fc', 'Netral': '#787878'}
+                            custom_palette = {'Negatif': 'red', 'Positif': '#0384fc'}
                             plt.figure(figsize=(10, 6))
 
-                            ax = sns.countplot(x='Sentimen', data=dfVisualization, order=['Negatif', 'Positif', 'Netral'], palette=custom_palette)
+                            ax = sns.countplot(x='Sentimen', data=dfVisualization, order=['Negatif', 'Positif'], palette=custom_palette)
                             ax.grid(axis='y', linestyle='--', alpha=0.5)
                             plt.title('Distribution of Sentiment Attributes')
                             plt.xlabel('Sentiment Attribute')
