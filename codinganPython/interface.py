@@ -9,21 +9,81 @@ from function import scrapingFunction
 from function import preprocessingFunction
 from function import mergedataFunction
 from function import svmFunction
+from function import indoBertFunction
 import os
 import matplotlib.pyplot as plt
 import wordcloud
 from wordcloud import WordCloud
 import joblib
 from sklearn.svm import SVC
-
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+import tensorflow as tf
+from imblearn.over_sampling import RandomOverSampler
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ["Crawling", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
+    selected = option_menu("Main Menu", ["Dashboard", "Crawling", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
         icons=['house', 'gear', 'book', 'pen', 'pen', 'book', 'kanban','activity', 'activity', 'cloud-upload' ], menu_icon="cast", default_index=0)
     selected
 
+if selected == 'Dashboard':
+    st.title("Dashboard :")
+    st.subheader("Data")
+    df_dashboard = pd.read_csv("data/dataHasilPenggabungan/dataSentimenProduk1-10.csv")
+    df_dashboard = df_dashboard[['Nama Pelanggan', 'Produk', 'Ulasan', 'Rating']]
+    dfVisualization = pd.read_csv("data/dataHasilPreprocessing/hasilPreprocessing1.csv")
+    if 'Ulasan' not in df_dashboard.columns:
+        st.warning("Data yang dimasukkan tidak sesuai.")
+    else:
+        st.dataframe(df_dashboard)
+
+    with st.spinner('Performing Visualization...'):
+        if 'Sentimen' not in dfVisualization.columns:
+            st.warning("Data yang dimasukkan tidak sesuai.")
+        else:
+            st.subheader("Visualization Sentiment - Bar Chart :")
+            custom_palette = {'Negatif': 'red', 'Positif': '#0384fc'}
+            plt.figure(figsize=(10, 6))
+
+            ax = sns.countplot(x='Sentimen', data=dfVisualization, order=['Negatif', 'Positif'], palette=custom_palette)
+            ax.grid(axis='y', linestyle='--', alpha=0.5)
+            plt.title('Distribution of Sentiment Attributes')
+            plt.xlabel('Sentiment Attribute')
+            plt.ylabel('Count')
+            for p in ax.patches:
+                ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                            ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+            st.pyplot(plt)
+
+            # Check if data for each sentiment exists
+            positive_messages = dfVisualization[dfVisualization['Sentimen'] == 'Positif']['Ulasan']
+            if positive_messages.empty:
+                st.warning("Data sentimen positif tidak ditemukan.")
+            else:
+                st.subheader("Visualization Text - WordCloud Positif :")
+                positive_text = ' '.join(positive_messages.astype(str))
+                wordcloud_positive = WordCloud(width=800, height=400, background_color='white', colormap='Blues').generate(positive_text)
+                plt.figure(figsize=(10, 5))
+                plt.imshow(wordcloud_positive, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
+
+            negative_messages = dfVisualization[dfVisualization['Sentimen'] == 'Negatif']['Ulasan']
+            if negative_messages.empty:
+                st.warning("Data sentimen negatif tidak ditemukan.")
+            else:
+                st.subheader("Visualization Text - WordCloud Negatif :")
+                negative_text = ' '.join(negative_messages.astype(str))
+                wordcloud_negative = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(negative_text)
+                plt.figure(figsize=(10, 5))
+                plt.imshow(wordcloud_negative, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
+
+    st.spinner(False)
+
 # Alur program di Streamlit
-if selected == "Crawling":
+elif selected == "Crawling":
     col1, col2 = st.columns([1,8])
     with col1:
         st.image('img/tokopedia.png', width=80)
@@ -66,7 +126,7 @@ elif selected == 'Merge Data':
 
                 st.success(f"Data penggabungan berhasil diunduh.")
 
-if selected == "Dataset":
+elif selected == "Dataset":
     st.title("Dataset Tokopedia :")
     uploaded_file = st.file_uploader("Upload .CSV file", type=["csv"])
     if uploaded_file is not None:
@@ -228,9 +288,29 @@ elif selected == 'Support Vector Machine':
             model_name = SVC()
             test_size = st.slider("Test Size", min_value=0.1, max_value=0.5, step=0.1, value=0.2)
             model_filename = st.text_input("Input Model Filename (without extension):")
+            smote_option = st.selectbox("SMOTE Option", ["SMOTE", "TANPA SMOTE"])
 
             if model_filename and st.button("Start Analysis"):
-                accuracy, report, model_filename_with_extension, vectorizer_filename, fig = svmFunction.analyze_sentiment(data, model_name, test_size, model_filename)
+                if smote_option == "SMOTE":
+                    # Proses SMOTE
+                    data_resampled = data.copy()
+                    X = data_resampled.drop(columns=['Sentimen'])
+                    y = data_resampled['Sentimen']
+                    oversample = RandomOverSampler(sampling_strategy='auto')
+                    X_resampled, y_resampled = oversample.fit_resample(X, y)
+                    data_resampled = pd.concat([X_resampled, y_resampled], axis=1)
+
+                    # Visualisasi jumlah sentimen sebelum SMOTE
+                    sentimen_before = data['Sentimen'].value_counts()
+                    st.write("Before SMOTE:")
+                    st.bar_chart(sentimen_before)
+
+                    # Visualisasi jumlah sentimen sesudah SMOTE
+                    sentimen_after = data_resampled['Sentimen'].value_counts()
+                    st.write("After SMOTE:")
+                    st.bar_chart(sentimen_after)
+
+                accuracy, report, model_filename_with_extension, vectorizer_filename, fig = svmFunction.analyze_sentiment(data_resampled if smote_option == "SMOTE" else data, model_name, test_size, model_filename)
 
                 if accuracy is not None and report is not None:
                     st.write(f"Accuracy: {accuracy:.2f}")
@@ -245,6 +325,54 @@ elif selected == 'Support Vector Machine':
 
 elif selected == 'IndoBert':
     st.title("Training IndoBert :")
+    uploaded_file = st.file_uploader("Upload csv file", type=["csv"])
+
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        
+        use_smote = st.checkbox("Use SMOTE")
+
+        # if use_smote:
+        #     st.write("Data before SMOTE:")
+        #     sentiment_counts_before = df['Sentimen'].value_counts()
+        #     st.bar_chart(sentiment_counts_before)
+
+        df = indoBertFunction.preprocess_data(df, use_smote)
+
+        model_name = 'indobenchmark/indobert-base-p1'
+        tokenizer = indoBertFunction.BertTokenizer.from_pretrained(model_name)
+        model = indoBertFunction.TFBertForSequenceClassification.from_pretrained(model_name)
+
+        reviews = df['Ulasan'].tolist()
+        labels = df['Sentimen'].tolist()
+
+        max_length = 128
+        input_ids, attention_masks, labels = indoBertFunction.tokenize_data(reviews, labels, tokenizer, max_length)
+
+        train_indices, test_indices = train_test_split(range(len(input_ids)), test_size=0.2, random_state=42)
+        train_data = (tf.gather(input_ids, train_indices), tf.gather(attention_masks, train_indices), tf.gather(labels, train_indices))
+        test_data = (tf.gather(input_ids, test_indices), tf.gather(attention_masks, test_indices), tf.gather(labels, test_indices))
+
+        optimizer = tf.keras.optimizers.Adam(learning_rate=2e-5)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
+
+        epochs = st.number_input("Masukkan Jumlah Epoch", min_value=1, max_value=20, value=10, step=1)
+        batch_size = 16
+
+        if st.button("Start Training"):
+            st.write("Training in progress...")
+            history = indoBertFunction.train_model(model, train_data, test_data, optimizer, loss, metric, epochs, batch_size)
+            st.write("Training completed!")
+
+            st.write("Evaluation:")
+            model.evaluate([test_data[0], test_data[1]], test_data[2])
+
+            test_predictions = model.predict([test_data[0], test_data[1]])
+            predicted_labels = tf.argmax(test_predictions.logits, axis=1)
+
+            st.write("Classification Report:")
+            st.text(classification_report(test_data[2], predicted_labels))
 
 elif selected == 'Testing':
     st.title("Testing :")
