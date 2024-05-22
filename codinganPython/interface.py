@@ -22,7 +22,7 @@ import tensorflow as tf
 from imblearn.over_sampling import RandomOverSampler
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ["Dashboard", "Crawling", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
+    selected = option_menu("Main Menu", ["Dashboard", "Scraping", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
         icons=['house', 'gear', 'book', 'pen', 'pen', 'book', 'kanban','activity', 'activity', 'cloud-upload' ], menu_icon="cast", default_index=0)
     selected
 
@@ -83,12 +83,12 @@ if selected == 'Dashboard':
     st.spinner(False)
 
 # Alur program di Streamlit
-elif selected == "Crawling":
+elif selected == "Scraping":
     col1, col2 = st.columns([1,8])
     with col1:
         st.image('img/tokopedia.png', width=80)
     with col2:
-        st.title("Crawling Data")
+        st.title("Scraping Data")
 
     url = st.text_input("Masukkan URL produk:")
     nama_file = st.text_input("Masukkan nama file hasil scraping data:")
@@ -329,14 +329,7 @@ elif selected == 'IndoBert':
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
-        
         use_smote = st.checkbox("Use SMOTE")
-
-        # if use_smote:
-        #     st.write("Data before SMOTE:")
-        #     sentiment_counts_before = df['Sentimen'].value_counts()
-        #     st.bar_chart(sentiment_counts_before)
-
         df = indoBertFunction.preprocess_data(df, use_smote)
 
         model_name = 'indobenchmark/indobert-base-p1'

@@ -21,7 +21,8 @@ norm= {" dgn " : " dengan ", ' seller ': ' penjual ',' service ':' pelayanan ', 
 " gak ":" tidak ", " dr ":" dari ", " yg ":" yang ", " lu ":" kamu ", " sya ":" saya ", 
 " lancarrr ":" lancar ", " kayak ":" seperti ", " ngawur ":" sembarangan ", " k ":" ke ", 
 " luasss ":" luas ", " sy ":" saya ", " thn ":" tahun ", " males ":" malas ",
-" tgl ":" tanggal ", " lg ":" lagi ", " bgt ":" banget ",' gua ':' saya ', '\n':' ', ' tpi ':' tapi ', ' standar ':' biasa ', ' standart ': ' biasa ', ' sdh ':' sudah ', ' n ':' dan ', ' gk ': ' tidak ', ' mengecwakan ':' mengecewakan ', ' d ':' di ', ' approved':' setuju', 'ademmmm ':'adem ', ' g ':' tidak ', ' gak ':' tidak ', ' cpt ':' cepat '}
+" tgl ":" tanggal ", " lg ":" lagi ", " bgt ":" banget ",' gua ':' saya ', '\n':' ', ' tpi ':' tapi ', ' standar ':' biasa ', ' standart ': ' biasa ', ' sdh ':' sudah ', ' n ':' dan ', ' gk ': ' tidak ', ' mengecwakan ':' mengecewakan ', ' d ':' di ', ' approved':' setuju', 'ademmmm ':'adem ', ' g ':' tidak ', ' gak ':' tidak ', ' cpt ':' cepat ', ' ku ':' aku ', ' design ':' desain ', ' purple ':' ungu ', 'bgus ':'bagus ', ' bgus ':' bagus ', ' stock ':' stok ', ' cumaa ':' hanya ', ' lmyan ':' lumayan ', ' gtu ':' gitu ', ' jatoh ':' jatuh ', ' koq ':' kok ', 'bnyk ':'banyak ', ' bnyk ':' banyak ', 'lucuuu ':'lucu ', ' lucuuu ':' lucu ', ' udh ':' udah ', ' mantaaaaaap ':' mantap ', ' check ':' cek ', ' mintiib ':' mantap ',
+' bbrp ':' beberapa ', 'bbrp ':'beberapa ', 'sy ':'aku ', ' sy ':' saya ', ' pengiirman ':' pengiriman ', 'mantull ':'mantap betul ', 'bbrp ':'beberapa ', ' bbrp ':' beberapa ', ' brp ':' berapa ', 'brp ':'berapa ', ' makasiih ':' makasih ', 'makasiih ':'makasih ', 'napa ':'kenapa ', ' napa ':' kenapa ', ' jdnya ':' jadi ', 'jdnya ':'jadi ', ' sm ':' sama ', 'sm ':'sama '}
 
 def normalisasi(text):
   for i in norm:
