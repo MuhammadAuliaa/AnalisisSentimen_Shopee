@@ -145,6 +145,8 @@ elif selected == "Preprocessing":
     if uploaded_file is not None:
         try :
             df = pd.read_csv(uploaded_file, dtype={"Rating":"object"}, index_col=0)
+            # Optional
+            # df = df.sample(10)
             st.dataframe(df)
         except pd.errors.EmptyDataError:
             st.write("File is empty, please check your input.")
@@ -176,6 +178,10 @@ elif selected == "Preprocessing":
             st.write('')
             st.write(f'--------------------------------------------------------------  TOKENIZE  --------------------------------------------------------------')
             st.write(df['Ulasan'])
+
+            min_words = 3
+            max_words = 100
+            df = preprocessingFunction.filter_tokens_by_length(df, 'Ulasan', min_words, max_words)
 
             # Melakukan stemming pada kolom "Ulasan"
             df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.stemming)
@@ -290,9 +296,17 @@ elif selected == 'Support Vector Machine':
             model_filename = st.text_input("Input Model Filename (without extension):")
             smote_option = st.selectbox("SMOTE Option", ["SMOTE", "TANPA SMOTE"])
 
+            segmentation_keywords = {
+                'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
+                'pengiriman': ['cepat', 'lambat', 'lelet', 'ontime', 'terlambat', 'instan', 'kurir', 'ekspektasi', 'semangat', 'kilogram', 'packingan', 'super', 'gampang', 'kilo', 'ekspedisi', 'online', 'kirim', 'diiket', 'angkat'],
+                'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
+                'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink'],
+                'harga': ['murah', 'mahal', 'terjangkau', 'ekonomis', 'premium', 'uang', 'duit', 'refund', 'promo', 'promonya'],
+                'respon': ['ragu', 'tidak puas', 'kurang', 'positif', 'negatif', 'astaga', 'tengkyuu', 'emang', 'tanggap', 'nyoba', 'suka', 'worth', 'haha', 'tolong', 'banget', 'balas', 'thanks', 'thank', 'aduh']
+            }
+
             if model_filename and st.button("Start Analysis"):
                 if smote_option == "SMOTE":
-                    # Proses SMOTE
                     data_resampled = data.copy()
                     X = data_resampled.drop(columns=['Sentimen'])
                     y = data_resampled['Sentimen']
@@ -300,25 +314,67 @@ elif selected == 'Support Vector Machine':
                     X_resampled, y_resampled = oversample.fit_resample(X, y)
                     data_resampled = pd.concat([X_resampled, y_resampled], axis=1)
 
-                    # Visualisasi jumlah sentimen sebelum SMOTE
                     sentimen_before = data['Sentimen'].value_counts()
                     st.write("Before SMOTE:")
                     st.bar_chart(sentimen_before)
 
-                    # Visualisasi jumlah sentimen sesudah SMOTE
                     sentimen_after = data_resampled['Sentimen'].value_counts()
                     st.write("After SMOTE:")
                     st.bar_chart(sentimen_after)
 
-                accuracy, report, model_filename_with_extension, vectorizer_filename, fig = svmFunction.analyze_sentiment(data_resampled if smote_option == "SMOTE" else data, model_name, test_size, model_filename)
+                # Overall evaluation
+                st.write("### Overall Evaluation")
+                accuracy, report, model_filename_with_extension, vectorizer_filename, fig = svmFunction.analyze_sentiment(data, model_name, test_size, model_filename + "_overall")
 
                 if accuracy is not None and report is not None:
-                    st.write(f"Accuracy: {accuracy:.2f}")
+                    st.write(f"Overall Accuracy: {accuracy:.2f}")
                     st.text("Classification Report:")
                     st.text(report)
                     st.plotly_chart(fig)
-                    st.success(f"Model saved to {model_filename_with_extension}")
-                    st.success(f"Vectorizer saved to {vectorizer_filename}")
+                    st.success(f"Overall model saved to {model_filename_with_extension}")
+                    st.success(f"Overall vectorizer saved to {vectorizer_filename}")
+
+                fig, axes = plt.subplots(2, 3, figsize=(12, 10), sharey=True)
+                
+                st.write('')
+                segmentation_order = ['bahan', 'pengiriman', 'kualitas', 'warna', 'harga', 'respon']
+                st.header('Visualisasi Aspek :')
+                for idx, segment in enumerate(segmentation_order):
+                    keywords = segmentation_keywords[segment]
+                    segment_data = data[data['Ulasan'].str.contains('|'.join(keywords), case=False)]
+
+                    if not segment_data.empty:
+                        sentiment_counts = segment_data['Sentimen'].value_counts()
+                        total_counts = sentiment_counts.sum()
+                        sentiment_df = pd.DataFrame({
+                            'Sentimen': sentiment_counts.index,
+                            'Count': sentiment_counts.values,
+                            'Percentage': sentiment_counts.values / total_counts * 100
+                        })
+
+                        row = idx // 3
+                        col = idx % 3
+                        sns.barplot(ax=axes[row, col], x='Sentimen', y='Percentage', data=sentiment_df, palette={'Positif': '#037ffc', 'Negatif': '#fc0324'}, dodge=False)
+                        axes[row, col].set_title(f"Aspek {segment}")
+                        axes[row, col].set_xticklabels(axes[row, col].get_xticklabels(), rotation=45)
+                        if col == 0:
+                            axes[row, col].set_ylabel("Percentage")
+
+                        # Add percentage labels above bars
+                        for p in axes[row, col].patches:
+                            height = p.get_height()
+                            axes[row, col].text(
+                                p.get_x() + p.get_width() / 2.,
+                                height + 0.5,
+                                f'{height:.1f}%',
+                                ha='center',
+                                va='bottom'
+                            )
+                    else:
+                        st.warning(f"No data found for aspek: {segment}")
+
+                fig.tight_layout(pad=1.0)  # Add spacing between rows
+                st.pyplot(fig)
 
         except Exception as e:
             st.warning("Data tidak sesuai. Pastikan file yang diunggah memiliki format yang benar dan kolom yang diperlukan.")
@@ -366,6 +422,31 @@ elif selected == 'IndoBert':
 
             st.write("Classification Report:")
             st.text(classification_report(test_data[2], predicted_labels))
+
+            # Segmentation keywords
+            segmentation_keywords = {
+                'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
+                'pengiriman': ['cepat', 'lambat', 'lelet', 'ontime', 'terlambat', 'instan', 'kurir', 'ekspektasi', 'semangat', 'kilogram', 'packingan', 'super', 'gampang', 'kilo', 'ekspedisi', 'online', 'kirim', 'diiket', 'angkat'],
+                'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
+                'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink'],
+                'harga': ['murah', 'mahal', 'terjangkau', 'ekonomis', 'premium', 'uang', 'duit', 'refund', 'promo', 'promonya'],
+                'respon': ['ragu', 'tidak puas', 'kurang', 'positif', 'negatif', 'astaga', 'tengkyuu', 'emang', 'tanggap', 'nyoba', 'suka', 'worth', 'haha', 'tolong', 'banget', 'balas', 'thanks', 'thank', 'aduh']
+            }
+
+            # Segmented evaluation
+            for segment, keywords in segmentation_keywords.items():
+                st.write(f"### Segment: {segment}")
+                segment_data = df[df['Ulasan'].str.contains('|'.join(keywords), case=False)]
+
+                if not segment_data.empty:
+                    # Count the positive and negative sentiments in the segment
+                    sentiment_counts = segment_data['Sentimen'].value_counts()
+
+                    # Display bar chart for the segment
+                    st.write(f"Sentiment Distribution for {segment}:")
+                    st.bar_chart(sentiment_counts)
+                else:
+                    st.warning(f"No data found for segment: {segment}")
 
 elif selected == 'Testing':
     st.title("Testing :")
