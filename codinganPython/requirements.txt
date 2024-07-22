@@ -11,4 +11,4 @@ tabulate
 selenium
 bs4
 nltk
-Sastrawi
+sastrawi
