@@ -6,11 +6,11 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 import re
-import nltk
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import matplotlib.pyplot as plt
 import seaborn as sns
+from wordcloud import WordCloud
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -244,3 +244,59 @@ if selected == 'User':
 
         fig.tight_layout(pad=1.0)  # Add spacing between rows
         st.pyplot(fig)
+
+elif selected == 'Dashboard':
+    st.title("Dashboard :")
+    st.subheader("Data")
+    df_dashboard = pd.read_csv("data/dataHasilPenggabungan/dataSentimenProduk1-10.csv")
+    df_dashboard = df_dashboard[['Nama Pelanggan', 'Produk', 'Ulasan', 'Rating']]
+    dfVisualization = pd.read_csv("data/dataHasilPreprocessing/hasilPreprocessing1.csv")
+    if 'Ulasan' not in df_dashboard.columns:
+        st.warning("Data yang dimasukkan tidak sesuai.")
+    else:
+        st.dataframe(df_dashboard)
+
+    with st.spinner('Performing Visualization...'):
+        if 'Sentimen' not in dfVisualization.columns:
+            st.warning("Data yang dimasukkan tidak sesuai.")
+        else:
+            st.subheader("Visualization Sentiment - Bar Chart :")
+            custom_palette = {'Negatif': 'red', 'Positif': '#0384fc'}
+            plt.figure(figsize=(10, 6))
+
+            ax = sns.countplot(x='Sentimen', data=dfVisualization, order=['Negatif', 'Positif'], palette=custom_palette)
+            ax.grid(axis='y', linestyle='--', alpha=0.5)
+            plt.title('Distribution of Sentiment Attributes')
+            plt.xlabel('Sentiment Attribute')
+            plt.ylabel('Count')
+            for p in ax.patches:
+                ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                            ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+            st.pyplot(plt)
+
+            # Check if data for each sentiment exists
+            positive_messages = dfVisualization[dfVisualization['Sentimen'] == 'Positif']['Ulasan']
+            if positive_messages.empty:
+                st.warning("Data sentimen positif tidak ditemukan.")
+            else:
+                st.subheader("Visualization Text - WordCloud Positif :")
+                positive_text = ' '.join(positive_messages.astype(str))
+                wordcloud_positive = WordCloud(width=800, height=400, background_color='white', colormap='Blues').generate(positive_text)
+                plt.figure(figsize=(10, 5))
+                plt.imshow(wordcloud_positive, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
+
+            negative_messages = dfVisualization[dfVisualization['Sentimen'] == 'Negatif']['Ulasan']
+            if negative_messages.empty:
+                st.warning("Data sentimen negatif tidak ditemukan.")
+            else:
+                st.subheader("Visualization Text - WordCloud Negatif :")
+                negative_text = ' '.join(negative_messages.astype(str))
+                wordcloud_negative = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(negative_text)
+                plt.figure(figsize=(10, 5))
+                plt.imshow(wordcloud_negative, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
+
+    st.spinner(False)
