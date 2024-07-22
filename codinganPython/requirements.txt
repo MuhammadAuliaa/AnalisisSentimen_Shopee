@@ -8,7 +8,6 @@ plotly
 imblearn
 seaborn
 wordcloud
-scikit-learn==1.2.2
 re
 sastrawi
 tabulate
