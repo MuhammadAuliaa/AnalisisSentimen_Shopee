@@ -22,11 +22,98 @@ import tensorflow as tf
 from imblearn.over_sampling import RandomOverSampler
 
 with st.sidebar:
-    selected = option_menu("Main Menu", ["Dashboard", "Scraping", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
-        icons=['house', 'gear', 'book', 'pen', 'pen', 'book', 'kanban','activity', 'activity', 'cloud-upload' ], menu_icon="cast", default_index=0)
+    selected = option_menu("Main Menu", ["User", "Dashboard", "Scraping", "Merge Data", 'Dataset', 'Preprocessing', "Visualization", "Support Vector Machine", "IndoBert", "Testing"], 
+        icons=['house','house', 'gear', 'book', 'pen', 'pen', 'book', 'kanban','activity', 'activity', 'cloud-upload' ], menu_icon="cast", default_index=0)
     selected
 
-if selected == 'Dashboard':
+if selected == 'User':
+    col1, col2 = st.columns([1, 8])
+    with col1:
+        st.image('img/tokopedia.png', width=80)
+    with col2:
+        st.title("Scraping Data")
+
+    url = st.text_input("Masukkan URL produk:")
+    jumlah_data = st.number_input("Masukkan jumlah data yang ingin diambil (*Max 50 baris) :", min_value=1, step=1, value=10)
+
+    if st.button("Mulai Scraping"):
+        jumlah_data_rating_low = int(jumlah_data * 0.3)  # 30% untuk rating 1-3
+        jumlah_data_rating_high = jumlah_data - jumlah_data_rating_low  # 70% untuk rating 4-5
+        
+        # Mengambil data rating 1-3
+        data_low = scrapingFunction.scrape_tokopedia_reviews_user(url, jumlah_data_rating_low, rating_min=1, rating_max=3)
+        
+        # Mengambil data rating 4-5
+        data_high = scrapingFunction.scrape_tokopedia_reviews_user(url, jumlah_data_rating_high, rating_min=4, rating_max=5)
+        
+        # Menggabungkan data
+        data_combined = pd.concat([data_low, data_high]).reset_index(drop=True)
+        
+        # =====================================
+        # Preprocessing
+        data_combined['Ulasan'] = data_combined['Ulasan'].fillna('')
+        data_combined['Ulasan'] = data_combined['Ulasan'].apply(preprocessingFunction.clean)
+        data_combined['Ulasan'] = data_combined['Ulasan'].apply(preprocessingFunction.normalisasi)
+        data_combined['Ulasan'] = data_combined['Ulasan'].apply(preprocessingFunction.stopword)
+        data_combined['Ulasan'] = data_combined['Ulasan'].apply(preprocessingFunction.tokenisasi)
+
+        min_words = 3
+        max_words = 100
+        data_combined = preprocessingFunction.filter_tokens_by_length(data_combined, 'Ulasan', min_words, max_words)
+
+        data_combined['Ulasan'] = data_combined['Ulasan'].apply(preprocessingFunction.stemming)
+        data_combined['Sentimen'] = data_combined['Rating'].apply(preprocessingFunction.labeling)
+        st.success("Proses data berhasil!")
+        st.write(data_combined[['Ulasan', 'Sentimen']])
+
+        # Segmentasi dan Visualisasi
+        segmentation_keywords = {
+            'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
+            'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
+            'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink']
+        }
+
+        segmentation_order = list(segmentation_keywords.keys())
+        
+        fig, axes = plt.subplots(nrows=1, ncols=len(segmentation_order), figsize=(20, 6), sharey=True)
+        st.header('Visualisasi Segment :')
+
+        for idx, segment in enumerate(segmentation_order):
+            keywords = segmentation_keywords[segment]
+            segment_data = data_combined[data_combined['Ulasan'].str.contains('|'.join(keywords), case=False)]
+
+            if not segment_data.empty:
+                sentiment_counts = segment_data['Sentimen'].value_counts()
+                total_counts = sentiment_counts.sum()
+                sentiment_df = pd.DataFrame({
+                    'Sentimen': sentiment_counts.index,
+                    'Count': sentiment_counts.values,
+                    'Percentage': sentiment_counts.values / total_counts * 100
+                })
+
+                sns.barplot(ax=axes[idx], x='Sentimen', y='Percentage', data=sentiment_df, palette={'Positif': '#037ffc', 'Negatif': '#fc0324'}, dodge=False)
+                axes[idx].set_title(f"Aspek {segment}")
+                axes[idx].set_xticklabels(axes[idx].get_xticklabels(), rotation=45)
+                if idx == 0:
+                    axes[idx].set_ylabel("Percentage")
+
+                # Add percentage labels above bars
+                for p in axes[idx].patches:
+                    height = p.get_height()
+                    axes[idx].text(
+                        p.get_x() + p.get_width() / 2.,
+                        height + 0.5,
+                        f'{height:.1f}%',
+                        ha='center',
+                        va='bottom'
+                    )
+            else:
+                st.warning(f"No data found for aspek: {segment}")
+
+        fig.tight_layout(pad=1.0)  # Add spacing between rows
+        st.pyplot(fig)
+
+elif selected == 'Dashboard':
     st.title("Dashboard :")
     st.subheader("Data")
     df_dashboard = pd.read_csv("data/dataHasilPenggabungan/dataSentimenProduk1-10.csv")
