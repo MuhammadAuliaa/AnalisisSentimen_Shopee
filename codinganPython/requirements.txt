@@ -9,9 +9,9 @@ imblearn
 seaborn
 wordcloud
 scikit-learn
-joblib
 re
 sastrawi
 tabulate
 bs4
 selenium
+joblib
