@@ -8,7 +8,7 @@ plotly
 imblearn
 seaborn
 wordcloud
-sklearn
+scikit-learn
 joblib
 tensorflow
 transformers
