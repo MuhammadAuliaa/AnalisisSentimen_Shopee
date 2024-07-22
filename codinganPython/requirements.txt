@@ -8,3 +8,7 @@ plotly
 imblearn
 seaborn
 tabulate
+selenium
+bs4
+nltk
+Sastrawi
