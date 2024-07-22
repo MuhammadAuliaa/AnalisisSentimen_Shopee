@@ -7,10 +7,3 @@ matplotlib
 plotly
 imblearn
 seaborn
-wordcloud
-re
-sastrawi
-tabulate
-bs4
-selenium
-joblib
