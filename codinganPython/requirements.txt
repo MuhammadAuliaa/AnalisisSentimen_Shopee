@@ -12,7 +12,6 @@ scikit-learn
 joblib
 tensorflow
 transformers
-nltk
 re
 sastrawi
 tabulate
