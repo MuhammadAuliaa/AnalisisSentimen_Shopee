@@ -19,7 +19,6 @@ from function import svmFunction
 from imblearn.over_sampling import RandomOverSampler
 import joblib
 from function import scrapingFunction
-from function import indoBertFunction
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
 
