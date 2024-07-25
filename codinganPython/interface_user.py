@@ -18,6 +18,7 @@ from sklearn.svm import SVC
 from function import svmFunction
 from imblearn.over_sampling import RandomOverSampler
 import joblib
+from function import scrapingFunction
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
