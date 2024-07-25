@@ -17,6 +17,7 @@ from function import preprocessingFunction
 from sklearn.svm import SVC
 from function import svmFunction
 from imblearn.over_sampling import RandomOverSampler
+import joblib
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -583,3 +584,24 @@ elif selected == 'Support Vector Machine':
 
         except Exception as e:
             st.warning("Data tidak sesuai. Pastikan file yang diunggah memiliki format yang benar dan kolom yang diperlukan.")
+
+elif selected == 'Testing':
+    st.title("Testing :")
+    
+    # Load model dan vectorizer dari file yang diunggah
+    model = joblib.load('codinganPython/model/24Juli_overall.pkl')
+    vectorizer = joblib.load('codinganPython/model/24Juli_overall.pkl')
+    
+    # Input teks dari pengguna
+    user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
+    
+    # Jika tombol ditekan untuk menganalisis
+    if st.button('Terjemahkan dan Prediksi'):
+        if user_input:
+            # Panggil fungsi predict_sentiment dengan model, vectorizer, dan teks sebagai argumen
+            sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
+            
+            # Tampilkan hasil prediksi sentimen
+            st.write('Sentimen:', sentiment)
+        else:
+            st.warning('Masukkan teks untuk menganalisis.')            
