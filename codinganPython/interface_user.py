@@ -14,6 +14,9 @@ from wordcloud import WordCloud
 from function import mergedataFunction
 import os
 from function import preprocessingFunction
+from sklearn.svm import SVC
+from function import svmFunction
+from imblearn.over_sampling import RandomOverSampler
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -484,3 +487,101 @@ elif selected == 'Visualization':
 
         except pd.errors.EmptyDataError:
             st.warning("Uploaded file is empty. Please upload a valid CSV file.")
+
+elif selected == 'Support Vector Machine':
+    st.title("Training Model :")
+    uploaded_file = st.file_uploader("Upload Excel file", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+            # Streamlit app
+            data = pd.read_csv(uploaded_file)
+            model_name = SVC()
+            test_size = st.slider("Test Size", min_value=0.1, max_value=0.5, step=0.1, value=0.2)
+            model_filename = st.text_input("Input Model Filename (without extension):")
+            smote_option = st.selectbox("SMOTE Option", ["SMOTE", "TANPA SMOTE"])
+
+            segmentation_keywords = {
+                'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
+                'pengiriman': ['cepat', 'lambat', 'lelet', 'ontime', 'terlambat', 'instan', 'kurir', 'ekspektasi', 'semangat', 'kilogram', 'packingan', 'super', 'gampang', 'kilo', 'ekspedisi', 'online', 'kirim', 'diiket', 'angkat'],
+                'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
+                'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink'],
+                'harga': ['murah', 'mahal', 'terjangkau', 'ekonomis', 'premium', 'uang', 'duit', 'refund', 'promo', 'promonya'],
+                'respon': ['ragu', 'tidak puas', 'kurang', 'positif', 'negatif', 'astaga', 'tengkyuu', 'emang', 'tanggap', 'nyoba', 'suka', 'worth', 'haha', 'tolong', 'banget', 'balas', 'thanks', 'thank', 'aduh']
+            }
+
+            if model_filename and st.button("Start Analysis"):
+                if smote_option == "SMOTE":
+                    data_resampled = data.copy()
+                    X = data_resampled.drop(columns=['Sentimen'])
+                    y = data_resampled['Sentimen']
+                    oversample = RandomOverSampler(sampling_strategy='auto')
+                    X_resampled, y_resampled = oversample.fit_resample(X, y)
+                    data_resampled = pd.concat([X_resampled, y_resampled], axis=1)
+
+                    sentimen_before = data['Sentimen'].value_counts()
+                    st.write("Before SMOTE:")
+                    st.bar_chart(sentimen_before)
+
+                    sentimen_after = data_resampled['Sentimen'].value_counts()
+                    st.write("After SMOTE:")
+                    st.bar_chart(sentimen_after)
+
+                    data = data_resampled
+
+                # Overall evaluation
+                st.write("### Overall Evaluation")
+                accuracy, report, model_filename_with_extension, vectorizer_filename, fig = svmFunction.analyze_sentiment(data, model_name, test_size, model_filename + "_overall")
+
+                if accuracy is not None and report is not None:
+                    st.write(f"Overall Accuracy: {accuracy:.2f}")
+                    st.text("Classification Report:")
+                    st.text(report)
+                    st.plotly_chart(fig)
+                    st.success(f"Overall model saved to {model_filename_with_extension}")
+                    st.success(f"Overall vectorizer saved to {vectorizer_filename}")
+
+                fig, axes = plt.subplots(2, 3, figsize=(12, 10), sharey=True)
+                
+                st.write('')
+                segmentation_order = ['bahan', 'pengiriman', 'kualitas', 'warna', 'harga', 'respon']
+                st.header('Visualisasi Aspek :')
+                for idx, segment in enumerate(segmentation_order):
+                    keywords = segmentation_keywords[segment]
+                    segment_data = data[data['Ulasan'].str.contains('|'.join(keywords), case=False)]
+
+                    if not segment_data.empty:
+                        sentiment_counts = segment_data['Sentimen'].value_counts()
+                        total_counts = sentiment_counts.sum()
+                        sentiment_df = pd.DataFrame({
+                            'Sentimen': sentiment_counts.index,
+                            'Count': sentiment_counts.values,
+                            'Percentage': sentiment_counts.values / total_counts * 100
+                        })
+
+                        row = idx // 3
+                        col = idx % 3
+                        sns.barplot(ax=axes[row, col], x='Sentimen', y='Percentage', data=sentiment_df, palette={'Positif': '#037ffc', 'Negatif': '#fc0324'}, dodge=False)
+                        axes[row, col].set_title(f"Aspek {segment}")
+                        axes[row, col].set_xticklabels(axes[row, col].get_xticklabels(), rotation=45)
+                        if col == 0:
+                            axes[row, col].set_ylabel("Percentage")
+
+                        # Add percentage labels above bars
+                        for p in axes[row, col].patches:
+                            height = p.get_height()
+                            axes[row, col].text(
+                                p.get_x() + p.get_width() / 2.,
+                                height + 0.5,
+                                f'{height:.1f}%',
+                                ha='center',
+                                va='bottom'
+                            )
+                    else:
+                        st.warning(f"No data found for aspek: {segment}")
+
+                fig.tight_layout(pad=1.0)  # Add spacing between rows
+                st.pyplot(fig)
+
+        except Exception as e:
+            st.warning("Data tidak sesuai. Pastikan file yang diunggah memiliki format yang benar dan kolom yang diperlukan.")
