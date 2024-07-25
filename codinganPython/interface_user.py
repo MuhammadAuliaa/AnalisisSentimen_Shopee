@@ -538,8 +538,6 @@ elif selected == 'Support Vector Machine':
                     st.text("Classification Report:")
                     st.text(report)
                     st.plotly_chart(fig)
-                    st.success(f"Overall model saved to {model_filename_with_extension}")
-                    st.success(f"Overall vectorizer saved to {vectorizer_filename}")
 
                 fig, axes = plt.subplots(2, 3, figsize=(12, 10), sharey=True)
                 
