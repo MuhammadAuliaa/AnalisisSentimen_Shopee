@@ -408,3 +408,79 @@ elif selected == "Preprocessing":
             st.success(f"Preprocessing {jumlah_data} Baris Data Berhasil !")
         else:
             st.warning("Preprocessing Data Gagal")   
+
+elif selected == 'Visualization':
+    st.title("Visualization:")
+    uploaded_file = st.file_uploader("Upload CSV file (Max 100 Baris Data)", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+            dfVisualization = pd.read_csv(uploaded_file)
+
+            if 'Ulasan' not in dfVisualization.columns:
+                st.warning("Data yang dimasukkan tidak sesuai.")
+            else:
+                st.dataframe(dfVisualization)
+
+                Visualization = st.button("Visualization")
+
+                if Visualization:
+                    with st.spinner('Performing Visualization...'):
+                        if 'Sentimen' not in dfVisualization.columns:
+                            st.warning("Data yang dimasukkan tidak sesuai.")
+                        else:
+                            st.subheader("Visualization Sentiment - Bar Chart :")
+                            custom_palette = {'Negatif': 'red', 'Positif': '#0384fc'}
+                            plt.figure(figsize=(10, 6))
+
+                            ax = sns.countplot(x='Sentimen', data=dfVisualization, order=['Negatif', 'Positif'], palette=custom_palette)
+                            ax.grid(axis='y', linestyle='--', alpha=0.5)
+                            plt.title('Distribution of Sentiment Attributes')
+                            plt.xlabel('Sentiment Attribute')
+                            plt.ylabel('Count')
+                            for p in ax.patches:
+                                ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                                            ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+                            st.pyplot(plt)
+
+                            # Check if data for each sentiment exists
+                            positive_messages = dfVisualization[dfVisualization['Sentimen'] == 'Positif']['Ulasan']
+                            if positive_messages.empty:
+                                st.warning("Data sentimen positif tidak ditemukan.")
+                            else:
+                                st.subheader("Visualization Text - WordCloud Positif :")
+                                positive_text = ' '.join(positive_messages.astype(str))
+                                wordcloud_positive = WordCloud(width=800, height=400, background_color='white', colormap='Blues').generate(positive_text)
+                                plt.figure(figsize=(10, 5))
+                                plt.imshow(wordcloud_positive, interpolation='bilinear')
+                                plt.axis('off')
+                                st.pyplot(plt)
+
+                            neutral_messages = dfVisualization[dfVisualization['Sentimen'] == 'Netral']['Ulasan']
+                            if neutral_messages.empty:
+                                st.warning("Data sentimen netral tidak ditemukan.")
+                            else:
+                                st.subheader("Visualization Text - WordCloud Netral :")
+                                neutral_text = ' '.join(neutral_messages.astype(str))
+                                wordcloud_neutral = WordCloud(width=800, height=400, background_color='white', colormap='Greens').generate(neutral_text)
+                                plt.figure(figsize=(10, 5))
+                                plt.imshow(wordcloud_neutral, interpolation='bilinear')
+                                plt.axis('off')
+                                st.pyplot(plt)
+
+                            negative_messages = dfVisualization[dfVisualization['Sentimen'] == 'Negatif']['Ulasan']
+                            if negative_messages.empty:
+                                st.warning("Data sentimen negatif tidak ditemukan.")
+                            else:
+                                st.subheader("Visualization Text - WordCloud Negatif :")
+                                negative_text = ' '.join(negative_messages.astype(str))
+                                wordcloud_negative = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(negative_text)
+                                plt.figure(figsize=(10, 5))
+                                plt.imshow(wordcloud_negative, interpolation='bilinear')
+                                plt.axis('off')
+                                st.pyplot(plt)
+
+                    st.spinner(False)
+
+        except pd.errors.EmptyDataError:
+            st.warning("Uploaded file is empty. Please upload a valid CSV file.")
