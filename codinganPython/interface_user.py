@@ -11,6 +11,8 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import matplotlib.pyplot as plt
 import seaborn as sns
 from wordcloud import WordCloud
+from function import mergedataFunction
+import os
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -312,3 +314,27 @@ elif selected == "Dataset":
             st.write("File is empty, please check your input.")
         except pd.errors.ParserError:
             st.write("Invalid data format, please check your input.")
+
+elif selected == 'Merge Data':
+    st.title("Merge Data")
+    uploaded_files = st.file_uploader("Gabungkan File (*minimal 2 file)", type="csv", accept_multiple_files=True)
+    merged_file_name = st.text_input("Masukkan Nama File Hasil Penggabungan (tanpa ekstensi)", "merged_data")
+
+    if uploaded_files:
+        if len(uploaded_files) < 2:
+            st.warning("Mohon unggah minimal 2 file untuk melakukan penggabungan data.")
+        else:
+            dataframes = [pd.read_csv(file) for file in uploaded_files]
+            merged_data = mergedataFunction.merge_and_reset_index(dataframes)
+            st.snow()
+
+            st.write("Merged Data:")
+            st.dataframe(merged_data)
+
+            if st.button("Download Data Hasil Penggabungan"):
+                output_folder = "data/dataHasilPenggabungan"
+                os.makedirs(output_folder, exist_ok=True)
+                output_file_path = os.path.join(output_folder, f"{merged_file_name}.csv")
+                merged_data.to_csv(output_file_path, index=False)
+
+                st.success(f"Data penggabungan berhasil diunduh.")
