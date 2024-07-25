@@ -300,3 +300,15 @@ elif selected == 'Dashboard':
                 st.pyplot(plt)
 
     st.spinner(False)
+
+elif selected == "Dataset":
+    st.title("Dataset Tokopedia :")
+    uploaded_file = st.file_uploader("Upload .CSV file", type=["csv"])
+    if uploaded_file is not None:
+        try :
+            df = pd.read_csv(uploaded_file, dtype={"Rating":"object"}, index_col=0)
+            st.dataframe(df)
+        except pd.errors.EmptyDataError:
+            st.write("File is empty, please check your input.")
+        except pd.errors.ParserError:
+            st.write("Invalid data format, please check your input.")
