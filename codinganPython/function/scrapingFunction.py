@@ -167,3 +167,7 @@ def segmentasi_ulasan(ulasan, segmentation_keywords):
                 segments[key] += 1
     
     return segments
+
+# Fungsi untuk memeriksa apakah URL valid
+def is_valid_url(url):
+    return url.startswith("https://www.tokopedia.com/hanafashionshop/")

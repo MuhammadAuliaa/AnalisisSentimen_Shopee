@@ -4,6 +4,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from imblearn.over_sampling import RandomOverSampler
+from transformers import BertTokenizer, TFBertForSequenceClassification
 
 def preprocess_data(df, use_smote=False):
     df['Sentimen'] = df['Sentimen'].map({'Positif': 1, 'Negatif': 0})

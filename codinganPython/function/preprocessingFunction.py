@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+import csv
 
 # Unduh stopwords dan wordnet jika belum diunduh
 nltk.download('stopwords')
@@ -35,6 +36,14 @@ norm= {" dgn " : " dengan ", ' seller ': ' penjual ',' service ':' pelayanan ', 
 'spt ':'seperti ',' spt ':' seperti ', ' spt':' seperti', 'lamaaa ':'lama ',' lamaaa ':' lama ', ' lamaaa':' lama', 'jgn ':'jangan ',' jgn ':' jangan ', ' jgn':' jangan', 'dimodif ':'modifikasi ',' dimodif ':' modifikasi ', ' dimodif':' modifikasi', ' pic ':' gambar ', ' tdi ':' tadi ', ' kyk ':' mirip ', ' seller ':' penjual ', ' skrg ':' sekarang ', ' nyesal ':' menyesal ', ' bagusss ':' bagus ', ' buy ':' beli ', ' kringet ':' keringat ', 'wkwk ':' ', ' wkwk ':' ', ' wkwk':' ', ' teball ':' tebal ', ' maksa ':' paksa ',
 'plis ':'tolong ',' plis ':' tolong ', ' plis':' tolong', 'karenaa ':'karena ',' karenaa ':' karena ', ' karenaa':' karena', 'dsni ':'disini ',' dsni ':' disini ', ' dsni':' disini', 'beranrakan ':'berantakan ',' beranrakan ':' berantakan ', ' beranrakan':' berantakan', 'pakek ':'pakai ',' pakek ':' pakai ', ' pakek':' pakai', 'pdhl ':'padahal ',' pdhl ':' padahal ', ' pdhl':' padahal', ' kereeen ':' keren ', ' ttp ':' tetap ', ' bngt ':' banget ',
 ' lmyn ':' lumayan ', 'ujurannya ':'ukuran ', ' ujurannya ':' ukuran ', ' ujurannya':' ukuran', 'sblmnya ':'sebelum ', ' sblmnya ':' sebelum ', ' sblmnya':' sebelum', 'trnyta ':'ternyata ', ' trnyta ':' ternyata ', ' trnyta':' ternyata', ' hpus ':' hapus '}
+
+# Function to update norm dictionary from CSV file
+def update_norm_from_csv(csv_file):
+    with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if len(row) == 2:
+                norm[row[0].strip()] = row[1].strip()
 
 def normalisasi(text):
   for i in norm:

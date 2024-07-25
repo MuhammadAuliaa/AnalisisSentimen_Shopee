@@ -11,6 +11,8 @@ import joblib
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+import streamlit as st
 
 # def select_model(model_name):
 #     if model_name == 'Support Vector Machine':
@@ -21,6 +23,10 @@ import seaborn as sns
 #         return MultinomialNB()
 #     else:
 #         return None
+
+# Pastikan direktori 'model' ada
+if not os.path.exists('model'):
+    os.makedirs('model')
 
 def analyze_sentiment(data, model_name, test_size, model_filename):
     try:
@@ -34,13 +40,14 @@ def analyze_sentiment(data, model_name, test_size, model_filename):
         vectorizer = CountVectorizer()
         train_features = vectorizer.fit_transform(train_data)
         test_features = vectorizer.transform(test_data)
-        model = SVC()
-        model.fit(train_features, train_labels)
-        model_filename_with_extension = f'model/{model_filename}.pkl'
 
+        model = model_name
+        model.fit(train_features, train_labels)
+
+        model_filename_with_extension = f'codinganPython/model/{model_filename}.pkl'
         joblib.dump(model, model_filename_with_extension)
 
-        vectorizer_filename = f'model/{model_filename}_vectorizer.pkl'
+        vectorizer_filename = f'codinganPython/model/{model_filename}_vectorizer.pkl'
         joblib.dump(vectorizer, vectorizer_filename)
 
         predictions = model.predict(test_features)
@@ -53,7 +60,7 @@ def analyze_sentiment(data, model_name, test_size, model_filename):
             z=cm,
             x=unique_labels,
             y=unique_labels,
-            colorscale='Blues',  
+            colorscale='Blues',
             showscale=True
         )
         fig.update_layout(
@@ -65,6 +72,7 @@ def analyze_sentiment(data, model_name, test_size, model_filename):
         return accuracy, report, model_filename_with_extension, vectorizer_filename, fig
 
     except Exception as e:
+        st.error(f"Error: {e}")
         return None, None, None, None, None
 
 def predict_sentiment(model, vectorizer, text):
