@@ -18,6 +18,7 @@ from sklearn.svm import SVC
 from function import svmFunction
 from imblearn.over_sampling import RandomOverSampler
 import joblib
+from function import scrapingFunction
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -308,6 +309,25 @@ elif selected == 'Dashboard':
 
     st.spinner(False)
 
+elif selected == "Scraping":
+    col1, col2 = st.columns([1,8])
+    with col1:
+        st.image('img/tokopedia.png', width=80)
+    with col2:
+        st.title("Scraping Data")
+
+    url = st.text_input("Masukkan URL produk:")
+    nama_file = st.text_input("Masukkan nama file hasil scraping data:")
+    jumlah_data = st.number_input("Masukkan jumlah data yang ingin diambil:", min_value=1, step=1, value=10)
+    rating_min = st.number_input("Masukkan rating minimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=1)
+    rating_max = st.number_input("Masukkan rating maksimum yang ingin diambil (1-5):", min_value=1, max_value=5, step=1, value=5)
+    folder_path = "D:\JOKI\AnalisisSentimen(ReviewShopee)\codinganPython\data\dataScrapingHanaShop"
+    file_path = folder_path + nama_file
+
+    if st.button("Mulai Scraping"):
+        scrapingFunction.scrape_tokopedia_reviews(url, jumlah_data, file_path, rating_min, rating_max)
+        st.success(f"Data telah disimpan ke: {file_path}.csv")
+
 elif selected == "Dataset":
     st.title("Dataset Tokopedia :")
     uploaded_file = st.file_uploader("Upload .CSV file", type=["csv"])
@@ -587,7 +607,7 @@ elif selected == 'Support Vector Machine':
 
 elif selected == 'Testing':
     st.title("Testing :")
-    
+
     # Load model dan vectorizer dari file yang diunggah
     model = joblib.load('codinganPython/model/24Juli_overall.pkl')
     vectorizer = joblib.load('codinganPython/model/24Juli_overall.pkl')
