@@ -13,6 +13,7 @@ import seaborn as sns
 from wordcloud import WordCloud
 from function import mergedataFunction
 import os
+from function import preprocessingFunction
 
 # Modifikasi fungsi scrape_tokopedia_reviews
 def scrape_tokopedia_reviews_user(url, jumlah_data, rating_min, rating_max):
@@ -338,3 +339,72 @@ elif selected == 'Merge Data':
                 merged_data.to_csv(output_file_path, index=False)
 
                 st.success(f"Data penggabungan berhasil diunduh.")
+
+elif selected == "Preprocessing":
+    st.title("Preprocessing Data")
+    uploaded_file = st.file_uploader("Upload .CSV file", type=["csv"])
+    file_name_input = st.text_input("Masukkan nama file hasil preprocessing (tanpa ekstensi .csv):")
+    if uploaded_file is not None:
+        try :
+            df = pd.read_csv(uploaded_file, dtype={"Rating":"object"}, index_col=0)
+            # Optional
+            # df = df.sample(10)
+            st.dataframe(df)
+        except pd.errors.EmptyDataError:
+            st.write("File is empty, please check your input.")
+        except pd.errors.ParserError:
+            st.write("Invalid data format, please check your input.")
+    
+    preprocessing = st.button("Preprocessing")
+    if preprocessing:
+        with st.spinner('Sedang melakukan preprocessing...'):
+            time.sleep(2)
+            # st.success("Preprocessing Berhasil & Data Disimpan!")
+            df['Ulasan'] = df['Ulasan'].fillna('')
+            df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.clean)
+            st.write('')
+            st.write(f'--------------------------------------------------------------  CLEANING  --------------------------------------------------------------')
+            st.write(df['Ulasan'])
+
+            df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.normalisasi)
+            csv_file_path = 'codinganPython/function/normalisasi.csv'
+            preprocessingFunction.update_norm_from_csv(csv_file_path)
+            st.write('')
+            st.write(f'--------------------------------------------------------------  NORMALIZE  --------------------------------------------------------------')
+            st.write(df['Ulasan'])
+
+            df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.stopword)
+            st.write('')
+            st.write('--------------------------------------------------------------  STOPWORD  --------------------------------------------------------------')
+            st.write(df['Ulasan'])
+
+            df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.tokenisasi)
+            st.write('')
+            st.write(f'--------------------------------------------------------------  TOKENIZE  --------------------------------------------------------------')
+            st.write(df['Ulasan'])
+
+            min_words = 3
+            max_words = 100
+            df = preprocessingFunction.filter_tokens_by_length(df, 'Ulasan', min_words, max_words)
+
+            # Melakukan stemming pada kolom "Ulasan"
+            df['Ulasan'] = df['Ulasan'].apply(preprocessingFunction.stemming)
+            st.write('')
+            st.write('--------------------------------------------------------------  STEMMING --------------------------------------------------------------')
+            st.write(df['Ulasan'])
+
+            df['Sentimen'] = df['Rating'].apply(preprocessingFunction.labeling)
+            st.write('')
+            st.write(f'--------------------------------------------------------------  LABELING  --------------------------------------------------------------')
+            st.write(df[['Ulasan', 'Sentimen']])
+            
+        # Menghentikan animasi loading
+        st.spinner(False)
+
+        # Pengkondisian Alert Crawling
+        jumlah_data = len(df)
+        if jumlah_data > 0:
+            st.snow()
+            st.success(f"Preprocessing {jumlah_data} Baris Data Berhasil !")
+        else:
+            st.warning("Preprocessing Data Gagal")   
