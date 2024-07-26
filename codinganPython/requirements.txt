@@ -8,8 +8,8 @@ plotly
 imblearn
 seaborn
 tabulate
-Selenium
-bs4
+Selenium==4.20.0
+bs4==0.0.1
 nltk
 sastrawi
 wordcloud
