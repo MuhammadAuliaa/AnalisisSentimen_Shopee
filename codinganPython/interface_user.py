@@ -19,7 +19,7 @@ from function import svmFunction
 from imblearn.over_sampling import RandomOverSampler
 import joblib
 from function import scrapingFunction
-# from function import indoBertFunction
+from function import indoBertFunction
 import tensorflow as tf
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
