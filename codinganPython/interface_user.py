@@ -702,21 +702,26 @@ elif selected == 'IndoBert':
 
 elif selected == 'Testing':
     st.title("Testing :")
-    
-    # Load model and vectorizer from uploaded files
-    model = joblib.load('codinganPython/model/24Juli_overall.pkl')
-    vectorizer = joblib.load('codinganPython/model/24Juli_overall_vectorizer.pkl')
-    
-    # Input text from user
-    user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
-    
-    # If button is pressed for analysis
-    if st.button('Terjemahkan dan Prediksi'):
-        if user_input:
-            # Call the predict_sentiment function with model, vectorizer, and text as arguments
-            sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
-            
-            # Display the sentiment prediction result
-            st.write('Sentimen:', sentiment)
-        else:
-            st.warning('Masukkan teks untuk dianalisis.')
+    model_file = st.file_uploader('Pilih file model (pkl)', type=['pkl'])
+    vectorizer_file = st.file_uploader('Pilih file vectorizer (pkl)', type=['pkl'])
+
+    if model_file and vectorizer_file:
+        # Load model dan vectorizer dari file yang diunggah
+        model = joblib.load(model_file)
+        vectorizer = joblib.load(vectorizer_file)
+        
+        # Input teks dari pengguna
+        user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
+        
+        # Jika tombol ditekan untuk menganalisis
+        if st.button('Terjemahkan dan Prediksi'):
+            if user_input:
+                # Panggil fungsi predict_sentiment dengan model, vectorizer, dan teks sebagai argumen
+                sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
+                
+                # Tampilkan hasil prediksi sentimen
+                st.write('Sentimen:', sentiment)
+            else:
+                st.warning('Masukkan teks untuk menganalisis.')
+    else:
+        st.warning('Pilih file model dan vectorizer sebelum melakukan testing.')
