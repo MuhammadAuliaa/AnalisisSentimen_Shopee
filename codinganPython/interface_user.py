@@ -701,26 +701,26 @@ elif selected == 'IndoBert':
 
 elif selected == 'Testing':
     st.title("Testing :")
-    model_file = st.file_uploader('Pilih file model (pkl)', type=['pkl'])
-    vectorizer_file = st.file_uploader('Pilih file vectorizer (pkl)', type=['pkl'])
+    # model_file = st.file_uploader('Pilih file model (pkl)', type=['pkl'])
+    # vectorizer_file = st.file_uploader('Pilih file vectorizer (pkl)', type=['pkl'])
 
-    if model_file and vectorizer_file:
-        # Load model dan vectorizer dari file yang diunggah
-        model = joblib.load(model_file)
-        vectorizer = joblib.load(vectorizer_file)
+    # if model_file and vectorizer_file:
+    #     # Load model dan vectorizer dari file yang diunggah
+    #     model = joblib.load(model_file)
+    #     vectorizer = joblib.load(vectorizer_file)
         
-        # Input teks dari pengguna
-        user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
+    #     # Input teks dari pengguna
+    #     user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
         
-        # Jika tombol ditekan untuk menganalisis
-        if st.button('Terjemahkan dan Prediksi'):
-            if user_input:
-                # Panggil fungsi predict_sentiment dengan model, vectorizer, dan teks sebagai argumen
-                sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
+    #     # Jika tombol ditekan untuk menganalisis
+    #     if st.button('Terjemahkan dan Prediksi'):
+    #         if user_input:
+    #             # Panggil fungsi predict_sentiment dengan model, vectorizer, dan teks sebagai argumen
+    #             sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
                 
-                # Tampilkan hasil prediksi sentimen
-                st.write('Sentimen:', sentiment)
-            else:
-                st.warning('Masukkan teks untuk menganalisis.')
-    else:
-        st.warning('Pilih file model dan vectorizer sebelum melakukan testing.')
+    #             # Tampilkan hasil prediksi sentimen
+    #             st.write('Sentimen:', sentiment)
+    #         else:
+    #             st.warning('Masukkan teks untuk menganalisis.')
+    # else:
+    #     st.warning('Pilih file model dan vectorizer sebelum melakukan testing.')
