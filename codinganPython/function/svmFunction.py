@@ -1,6 +1,5 @@
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import plotly.express as px
 import plotly.figure_factory as ff
@@ -73,7 +72,9 @@ def analyze_sentiment(data, model_name, test_size, model_filename):
         return None, None, None, None, None
 
 def predict_sentiment(model, vectorizer, text):
+    # Transform the input text using the vectorizer
     text_vectorized = vectorizer.transform([text])
+    # Predict the sentiment using the model
     prediction = model.predict(text_vectorized)[0]
     return prediction
 
