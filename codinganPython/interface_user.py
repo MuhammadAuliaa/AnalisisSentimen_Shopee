@@ -632,69 +632,69 @@ elif selected == 'Testing':
 
 elif selected == 'IndoBert':
     st.title("Training IndoBert :")
-#     uploaded_file = st.file_uploader("Upload csv file", type=["csv"])
+    uploaded_file = st.file_uploader("Upload csv file", type=["csv"])
 
-#     if uploaded_file is not None:
-#         df = pd.read_csv(uploaded_file)
-#         use_smote = st.checkbox("Use SMOTE")
-#         df = indoBertFunction.preprocess_data(df, use_smote)
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        use_smote = st.checkbox("Use SMOTE")
+        df = indoBertFunction.preprocess_data(df, use_smote)
 
-#         model_name = 'indobenchmark/indobert-base-p1'
-#         tokenizer = indoBertFunction.BertTokenizer.from_pretrained(model_name)
-#         model = indoBertFunction.TFBertForSequenceClassification.from_pretrained(model_name)
+        model_name = 'indobenchmark/indobert-base-p1'
+        tokenizer = indoBertFunction.BertTokenizer.from_pretrained(model_name)
+        model = indoBertFunction.TFBertForSequenceClassification.from_pretrained(model_name)
 
-#         reviews = df['Ulasan'].tolist()
-#         labels = df['Sentimen'].tolist()
+        reviews = df['Ulasan'].tolist()
+        labels = df['Sentimen'].tolist()
 
-#         max_length = 128
-#         input_ids, attention_masks, labels = indoBertFunction.tokenize_data(reviews, labels, tokenizer, max_length)
+        max_length = 128
+        input_ids, attention_masks, labels = indoBertFunction.tokenize_data(reviews, labels, tokenizer, max_length)
 
-#         train_indices, test_indices = train_test_split(range(len(input_ids)), test_size=0.2, random_state=42)
-#         train_data = (tf.gather(input_ids, train_indices), tf.gather(attention_masks, train_indices), tf.gather(labels, train_indices))
-#         test_data = (tf.gather(input_ids, test_indices), tf.gather(attention_masks, test_indices), tf.gather(labels, test_indices))
+        train_indices, test_indices = train_test_split(range(len(input_ids)), test_size=0.2, random_state=42)
+        train_data = (tf.gather(input_ids, train_indices), tf.gather(attention_masks, train_indices), tf.gather(labels, train_indices))
+        test_data = (tf.gather(input_ids, test_indices), tf.gather(attention_masks, test_indices), tf.gather(labels, test_indices))
 
-#         optimizer = tf.keras.optimizers.Adam(learning_rate=2e-5)
-#         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-#         metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
+        optimizer = tf.keras.optimizers.Adam(learning_rate=2e-5)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
 
-#         epochs = st.number_input("Masukkan Jumlah Epoch", min_value=1, max_value=20, value=10, step=1)
-#         batch_size = 16
+        epochs = st.number_input("Masukkan Jumlah Epoch", min_value=1, max_value=20, value=10, step=1)
+        batch_size = 16
 
-#         if st.button("Start Training"):
-#             st.write("Training in progress...")
-#             history = indoBertFunction.train_model(model, train_data, test_data, optimizer, loss, metric, epochs, batch_size)
-#             st.write("Training completed!")
+        if st.button("Start Training"):
+            st.write("Training in progress...")
+            history = indoBertFunction.train_model(model, train_data, test_data, optimizer, loss, metric, epochs, batch_size)
+            st.write("Training completed!")
 
-#             st.write("Evaluation:")
-#             model.evaluate([test_data[0], test_data[1]], test_data[2])
+            st.write("Evaluation:")
+            model.evaluate([test_data[0], test_data[1]], test_data[2])
 
-#             test_predictions = model.predict([test_data[0], test_data[1]])
-#             predicted_labels = tf.argmax(test_predictions.logits, axis=1)
+            test_predictions = model.predict([test_data[0], test_data[1]])
+            predicted_labels = tf.argmax(test_predictions.logits, axis=1)
 
-#             st.write("Classification Report:")
-#             st.text(classification_report(test_data[2], predicted_labels))
+            st.write("Classification Report:")
+            st.text(classification_report(test_data[2], predicted_labels))
 
-#             # Segmentation keywords
-#             segmentation_keywords = {
-#                 'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
-#                 'pengiriman': ['cepat', 'lambat', 'lelet', 'ontime', 'terlambat', 'instan', 'kurir', 'ekspektasi', 'semangat', 'kilogram', 'packingan', 'super', 'gampang', 'kilo', 'ekspedisi', 'online', 'kirim', 'diiket', 'angkat'],
-#                 'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
-#                 'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink'],
-#                 'harga': ['murah', 'mahal', 'terjangkau', 'ekonomis', 'premium', 'uang', 'duit', 'refund', 'promo', 'promonya'],
-#                 'respon': ['ragu', 'tidak puas', 'kurang', 'positif', 'negatif', 'astaga', 'tengkyuu', 'emang', 'tanggap', 'nyoba', 'suka', 'worth', 'haha', 'tolong', 'banget', 'balas', 'thanks', 'thank', 'aduh']
-#             }
+            # Segmentation keywords
+            segmentation_keywords = {
+                'bahan': ['tipis', 'tebal', 'lembut', 'keras', 'kasar', 'rapih', 'rapi', 'pendek', 'adem', 'nyaman', 'jahit', 'halus', 'gerah', 'relaxing', 'baju', 'model', 'celana', 'nama', 'transparan', 'badan', 'sayap'],
+                'pengiriman': ['cepat', 'lambat', 'lelet', 'ontime', 'terlambat', 'instan', 'kurir', 'ekspektasi', 'semangat', 'kilogram', 'packingan', 'super', 'gampang', 'kilo', 'ekspedisi', 'online', 'kirim', 'diiket', 'angkat'],
+                'kualitas': ['rusak', 'sesuai', 'bagus', 'jelek', 'berkualitas', 'keringat', 'sobek', 'aneh', 'foto', 'gambar', 'keren', 'mantap', 'kecil', 'label', 'ngetat', 'ketat', 'pict', 'fashion', 'bolong', 'style', 'sederhana'],
+                'warna': ['cerah', 'pudar', 'gelap', 'putih', 'hitam', 'warna', 'biru', 'soft', 'navy', 'pink'],
+                'harga': ['murah', 'mahal', 'terjangkau', 'ekonomis', 'premium', 'uang', 'duit', 'refund', 'promo', 'promonya'],
+                'respon': ['ragu', 'tidak puas', 'kurang', 'positif', 'negatif', 'astaga', 'tengkyuu', 'emang', 'tanggap', 'nyoba', 'suka', 'worth', 'haha', 'tolong', 'banget', 'balas', 'thanks', 'thank', 'aduh']
+            }
 
-#             # Segmented evaluation
-#             for segment, keywords in segmentation_keywords.items():
-#                 st.write(f"### Segment: {segment}")
-#                 segment_data = df[df['Ulasan'].str.contains('|'.join(keywords), case=False)]
+            # Segmented evaluation
+            for segment, keywords in segmentation_keywords.items():
+                st.write(f"### Segment: {segment}")
+                segment_data = df[df['Ulasan'].str.contains('|'.join(keywords), case=False)]
 
-#                 if not segment_data.empty:
-#                     # Count the positive and negative sentiments in the segment
-#                     sentiment_counts = segment_data['Sentimen'].value_counts()
+                if not segment_data.empty:
+                    # Count the positive and negative sentiments in the segment
+                    sentiment_counts = segment_data['Sentimen'].value_counts()
 
-#                     # Display bar chart for the segment
-#                     st.write(f"Sentiment Distribution for {segment}:")
-#                     st.bar_chart(sentiment_counts)
-#                 else:
-#                     st.warning(f"No data found for segment: {segment}")
+                    # Display bar chart for the segment
+                    st.write(f"Sentiment Distribution for {segment}:")
+                    st.bar_chart(sentiment_counts)
+                else:
+                    st.warning(f"No data found for segment: {segment}")
