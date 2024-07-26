@@ -13,3 +13,4 @@ bs4
 nltk
 sastrawi
 wordcloud
+tensorflow
