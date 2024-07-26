@@ -698,3 +698,25 @@ elif selected == 'IndoBert':
                     st.bar_chart(sentiment_counts)
                 else:
                     st.warning(f"No data found for segment: {segment}")
+
+
+elif selected == 'Testing':
+    st.title("Testing :")
+    
+    # Load model dan vectorizer dari file yang diunggah
+    model = joblib.load('codinganPython/model/24Juli_overall.pkl')
+    vectorizer = joblib.load('codinganPython/model/24Juli_overall_vectorizer.pkl')
+    
+    # Input teks dari pengguna
+    user_input = st.text_area('Masukkan teks untuk diterjemahkan dan dianalisis:')
+    
+    # Jika tombol ditekan untuk menganalisis
+    if st.button('Terjemahkan dan Prediksi'):
+        if user_input:
+            # Panggil fungsi predict_sentiment dengan model, vectorizer, dan teks sebagai argumen
+            sentiment = svmFunction.predict_sentiment(model, vectorizer, user_input)
+            
+            # Tampilkan hasil prediksi sentimen
+            st.write('Sentimen:', sentiment)
+        else:
+            st.warning('Masukkan teks untuk menganalisis.')             
