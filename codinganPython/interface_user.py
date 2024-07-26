@@ -699,7 +699,6 @@ elif selected == 'IndoBert':
                 else:
                     st.warning(f"No data found for segment: {segment}")
 
-
 elif selected == 'Testing':
     st.title("Testing :")
     model_file = st.file_uploader('Pilih file model (pkl)', type=['pkl'])
